@@ -10,11 +10,11 @@ import matplotlib
 # for cluster usage:
 #   force matplotlib to not use any Xwindows backend
 #   use this if running on a cluster; remove this line for desktop use
-# matplotlib.use('Agg')
+matplotlib.use('Agg')
 
 import matplotlib.pyplot as plt
 
-import svgutils.transform as sg
+#import svgutils.transform as sg
 
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
