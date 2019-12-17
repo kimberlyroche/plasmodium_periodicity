@@ -34,4 +34,4 @@ expression_wrapped.to_csv("working/"+get_strain_label(strain_idx)+"_expression_w
 scaled_expression_interpolated = scale_expression_data(expression_interpolated)
 
 # this will calculate the error and export the RMSE plots as .svg files
-get_min_error_wrap(scaled_expression_interpolated, strain_idx, microscopy=False, output_dir=output_dir)
+get_min_error_wrap(scaled_expression_interpolated, strain_idx, microscopy=False)
