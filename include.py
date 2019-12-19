@@ -51,10 +51,19 @@ def scale_expression_data(df):
 # having evaluated these already (via the functions included), we're fixing them here
 # cycle lengths fixed as:
 #    3D7 = 39
-#    D6 = 38
+#    D6 = 36
 #    SA250 = 54
 #    FVO = 45
-def get_wrap_indices(idx):
+def get_best_microscopy_wrap_indices(idx):
+	spans = [(0, 38), (0, 35), (0, 54), (0, 42)]
+	return spans[idx]
+
+# get consensus best wraps, fixed here as:
+#    3D7 = 39
+#    D6 = 36
+#    SA250 = 54
+#    FVO = 45
+def get_concensus_wrap_indices(idx):
 	spans = [(0, 38), (0, 35), (0, 53), (0, 44)]
 	return spans[idx]
 
@@ -179,7 +188,7 @@ def get_expression_interpolated(strain_idx, file_suffix=None, working_dir = 'wor
 	# min_max_scaler will throw a type error about the row column, headers unless read in with read_csv
 	# this should be debugged (TBD) but as a workaround if expression needs to be interpolated, perform
 	# the interpolation, write the results out, then read it back in
-	interpolated_filepath = working_dir + get_strain_label(strain_idx) + "_expression_interpolated.csv"
+	interpolated_filepath = working_dir + get_strain_label(strain_idx) + "_expression_interpolated_" + method + ".csv"
 	print("Interpolating genes : " + interpolated_filepath)
 	if not os.path.isfile(interpolated_filepath):
 		if file_suffix == None:
@@ -204,7 +213,7 @@ def get_expression_interpolated(strain_idx, file_suffix=None, working_dir = 'wor
 
 # get interpolated microscopy measurements
 def get_microscopy_interpolated(strain_idx, working_dir = 'working/', data_dir = 'data/', method = 'linear'):
-	path = working_dir + get_strain_label(strain_idx) + "_microscopy_interpolated.csv"
+	path = working_dir + get_strain_label(strain_idx) + "_microscopy_interpolated_" + method + ".csv"
 	print("Path is: " + path)
 	if os.path.isfile(path):
 		microscopy_interpolated = pd.read_csv(path, index_col=0)
@@ -479,6 +488,67 @@ def get_optima_pair_distance(df, gene, return_all_optima=False):
 		min2 = mins[dkeys[1]]
 		min_delta = int(abs(min2-min1))
 	return (max_delta, min_delta, maxes, mins)
+
+# filter a single absolute maximum from list of local maxima
+def get_splined_peak(maxes):
+	# format of maxes: {1152.2: 0.0, 1144.25: 48.0, 1286.21: 9.0, 1623.8900000000001: 36.0}
+	dkeys = list(maxes.keys())
+	dkeys.sort()
+	dkeys.reverse()
+	# return peak (x, y)
+	return (maxes[dkeys[0]], dkeys[0])
+
+# get nearest troughs for a given maximum
+def get_troughs_for_peak(peak_x, peak_y, mins):
+	# format of mins: {736.51199999999994: 42.0, 77.524100000000004: 27.0, 895.822: 3.0}
+	mins_sorted_by_x = sorted(mins.items(), key=lambda kv: kv[1])
+	# format of mins_sorted_by_x: [(895.822, 3.0), (77.524100000000004, 27.0), (736.51199999999994, 42.0)]
+	t1_x = t1_y = -1
+	t2_x = t2_y = -1
+	for t in mins_sorted_by_x:
+		if t[1] < peak_x:
+			t1_x = t[1]
+			t1_y = t[0]
+		if t[1] > peak_x and t2_x < 0:
+			t2_x = t[1]
+			t2_y = t[0]
+	return ((t1_x, t1_y), (t2_x, t2_y))
+
+# get half peak width markers from peak and trouph locations determined by derivative of spline for a
+# given gene's expression
+def get_peak_width_markers(original_df, interpolated_df, gene, strain, verbose=False):
+	(maxes, mins) = get_pchip_optima(original_df, gene)
+	(peak_x, peak_y) = get_splined_peak(maxes)
+	((trough1_x, trough1_y), (trough2_x, trough2_y)) = get_troughs_for_peak(peak_x, peak_y, mins)
+
+	halfway1 = -1
+	closest_x_left = -1
+	halfway2 = -1
+	closest_x_right = -1
+	if peak_x >= 0: # no reason it shouldn't be but
+		if trough1_x >= 0:
+			halfway1 = (peak_y - trough1_y)/2. + trough1_y
+			closest_x_left = -1
+			closest_error = np.inf
+			for t in range(int(trough1_x), int(peak_x)+1):
+				this_error = abs(interpolated_df.loc[gene][t] - halfway1)
+				if this_error < closest_error:
+					closest_error = this_error
+					closest_x_left = t
+		if trough2_x >= 0:
+			halfway2 = (peak_y - trough2_y)/2. + trough2_y
+			closest_x_right = -1
+			closest_error = np.inf
+			for t in range(int(peak_x), int(trough2_x)):
+				this_error = abs(interpolated_df.loc[gene][t] - halfway2)
+				if this_error < closest_error:
+					closest_error = this_error
+					closest_x_right = t
+
+	if verbose:
+		print("Positions: (%d -- %d -- %d -- %d -- %d)" % (trough1_x, closest_x_left, peak_x, closest_x_right, trough2_x))
+
+	return (trough1_x, closest_x_left, peak_x, closest_x_right, trough2_x)
 
 # ============================================================================================
 #   VISUALIZATION

@@ -1,27 +1,34 @@
+# this script plots histograms for peak-to-peak and trough-to-trough distances
+# given all critical points (mins, maxes) identified for a given strain and recorded
+# in working/{strain}_maxes_{interpolation}.csv and working/{strain}_mins_{interpolation}.csv
+# 
+# output are:
+#   paired peak list in working/{strain}_maxes_{interpolation}.csv
+#   paired trough list in working/{strain}_mins_{interpolation}.csv
+#   histrogram of peak-peak distances in output/S8/{strain}_peakpeak_maxes_{interpolation}.svg
+#   histrogram of trough-trough distances in output/S8/{strain}_peakpeak_mins_{interpolation}.svg
+
 import numpy as np
 import sys
 
 from include import get_strain_label
 from include import get_expression_interpolated
 from include import get_expression
-from include import get_pchip_optima
 from include import get_optima_pair_distance
-
-from include import plot_expression_splined
 
 import matplotlib
 # Force matplotlib to not use any Xwindows backend.
 # matplotlib.use('Agg')
-
 import matplotlib.pyplot as plt
 
-# usage: python peak_to_peak.py [strain idx]
-# e.g.: python peak_to_peak.py 0
+# usage: python plot_extrema_distribution.py [strain idx]
+# e.g.: python plot_extrema_distribution.py 0
 
 strain = -1
-file_suffix = '_p25_genelist'
-genelist_dir = 'data/p25/'
-interpolation_method = 'linear'
+genelist_dir = "data/p25/"
+working_dir = "working/"
+output_dir = "output/"
+interpolation_method = "PCHIP"
 
 if len(sys.argv) >= 2:
 	strain = int(sys.argv[1])
@@ -32,11 +39,12 @@ else:
 strain_label = get_strain_label(strain)
 
 expression = get_expression(strain, '_p25_genelist', genelist_dir=genelist_dir)
-expression_interpolated = get_expression_interpolated(strain, file_suffix, genelist_dir=genelist_dir, method = interpolation_method)
+expression_interpolated = get_expression_interpolated(strain, file_suffix='_p25_genelist',
+	genelist_dir=genelist_dir, method=interpolation_method)
 
-file_maxes = open("working/" + strain_label + "_maxes.csv", "w") # peaks
+file_maxes = open(working_dir + strain_label + "_maxes_" + interpolation_method + ".csv", "w") # peaks
 file_maxes.write("gene,expr,timepoint\n")
-file_mins = open("working/" + strain_label + "_mins.csv", "w") # troughs
+file_mins = open(working_dir + strain_label + "_mins_" + interpolation_method + ".csv", "w") # troughs
 file_mins.write("gene,expr,timepoint\n")
 max_deltas = []
 min_deltas = []
@@ -57,21 +65,20 @@ for i in range(len(expression_interpolated.index)):
 file_maxes.close()
 file_mins.close()
 
-fig = plt.figure(1, figsize=(15, 7))
+fig = plt.figure(1, figsize=(15, 10))
 ax = plt.subplot(111)
-plt.hist(max_deltas, bins=70)
+plt.hist(max_deltas, bins=70, rwidth=1)
 plt.xlim(xmin=0., xmax=70.)
 plt.xticks(np.arange(0, 70, step=2))
 plt.ylim(ymin=0., ymax=1200.)
-plt.savefig("output/" + strain_label+'_peak-to-peak_maxes.svg', bbox_inches='tight')
+plt.savefig(output_dir + "S8/" + strain_label + "_peakpeak_maxes_" + interpolation_method + ".svg", bbox_inches="tight")
 plt.close(fig)
 
-fig = plt.figure(1, figsize=(15, 7))
+fig = plt.figure(1, figsize=(15, 10))
 ax = plt.subplot(111)
-plt.hist(min_deltas, bins=70)
+plt.hist(min_deltas, bins=70, rwidth=1)
 plt.xlim(xmin=0., xmax=70.)
 plt.xticks(np.arange(0, 70, step=2))
 plt.ylim(ymin=0., ymax=1200.)
-plt.savefig("output/" + strain_label+'_peak-to-peak_mins.svg', bbox_inches='tight')
+plt.savefig(output_dir + "S9/" + strain_label + "_peakpeak_mins_" + interpolation_method + ".svg", bbox_inches="tight")
 plt.close(fig)
-
