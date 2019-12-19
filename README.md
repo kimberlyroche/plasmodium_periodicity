@@ -17,7 +17,7 @@ Performs interpolation of expression data and exhausting wrapping and wrap error
 ### File: score_microscopy_wraps.py
 Performs interpolation of microscopy data and exhausting wrapping and wrap error-calculation
 
-## File: perform_expression_wrap.py
+### File: perform_expression_wrap.py
 Wraps expression data around desired start, end time points
 
 ### File: perform_microscopy_wrap.py
