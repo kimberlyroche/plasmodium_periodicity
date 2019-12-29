@@ -10,6 +10,8 @@ from include import get_expression_interpolated
 from include import get_concensus_wrap_indices
 from include import get_strain_label
 from include import apply_wrap_expression
+#from include import scale_expression_data
+#from include import get_min_error_wrap
 
 # usage: python perform_expression_wrap.py [strain idx]
 # e.g.: python perform_expression_wrap.py 0
@@ -32,3 +34,10 @@ expression_interpolated = get_expression_interpolated(strain_idx, file_suffix='_
 expression_wrapped = apply_wrap_expression(expression_interpolated, start, end, 0)
 
 expression_wrapped.to_csv("working/" + get_strain_label(strain_idx) + "_expression_wrapped_" + interpolation_method + ".csv")
+
+#scaled_expression_interpolated = scale_expression_data(expression_interpolated)
+
+#scaled_expression_interpolated.to_csv("working/"+get_strain_label(strain_idx)+"_scaled_expression_wrapped_" + interpolation_method + ".csv")
+
+# this will calculate the error and export the RMSE plots as .svg files
+#get_min_error_wrap(scaled_expression_interpolated, strain_idx, microscopy=False, output_dir="output/S6/")
