@@ -1,0 +1,3 @@
+Interpolating genes : working/SA250_expression_interpolated_PCHIP.csv
+Min SA250 error achieved with (0, 60): 17.673
+Period length: 61

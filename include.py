@@ -55,7 +55,7 @@ def scale_expression_data(df):
 #    SA250 = 54
 #    FVO = 45
 def get_best_microscopy_wrap_indices(idx):
-	spans = [(0, 38), (0, 35), (0, 54), (0, 42)]
+	spans = [(0, 38), (0, 35), (0, 53), (0, 42)]
 	return spans[idx]
 
 # get consensus best wraps, fixed here as:

@@ -1,0 +1,3 @@
+Interpolating genes : working/FVO_expression_interpolated_PCHIP.csv
+Min FVO error achieved with (0, 48): 12.787
+Period length: 49
