@@ -1,6 +1,7 @@
 # plasmodium_periodicity
 
-These are scripts associated with the P. falciparum oscillator analysis of Smith et al. (2020) that perform interpolation, scoring, and "wrapping" of transcriptome and microscopy data.
+These are scripts associated with the P. falciparum oscillator analysis of Smith et al. (2020) that perform interpolation, scoring, and 
+"wrapping" of transcriptome and microscopy data. All scripts were run with Python 3.4.1.
 
 ### Folder: data
 Expression and microscopy data and periodic gene lists associated with 4 strains of P. falciparum
